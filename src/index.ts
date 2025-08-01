@@ -11,17 +11,16 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+const ALLOWED_ORIGINS = ["https://www.tybusby.com", "http://localhost"];
+
 export default {
+    // Testing deployment
     async fetch(request): Promise<Response> {
-        // Handle preflight OPTIONS request
         if (request.method === "OPTIONS") {
+            // Handle preflight OPTIONS request
             return new Response(null, {
                 status: 204,
-                headers: {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, OPTIONS",
-                    "Access-Control-Allow-Headers": "*",
-                },
+                headers: getCorsHeaders(),
             });
         }
 
@@ -63,6 +62,14 @@ function getRequestHeaders(request: Request): Headers {
 
 function getResponseHeaders(response: Response): Headers {
     const headers = new Headers(response.headers);
+    return addCorsHeaders(headers);
+}
+
+function getCorsHeaders() {
+    return addCorsHeaders(new Headers());
+}
+
+function addCorsHeaders(headers: Headers): Headers {
     headers.set("Access-Control-Allow-Origin", "*");
     headers.set("Access-Control-Allow-Headers", "*");
     headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
