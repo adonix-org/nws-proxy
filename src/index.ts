@@ -54,7 +54,6 @@ function getRequestHeaders(request: Request): Headers {
         headers.set("If-Modified-Since", modifed);
     }
 
-    console.log("Request", request.headers);
     const featureFlags = request.headers.get("Feature-Flags");
     if (featureFlags) {
         headers.set("Feature-Flags", featureFlags);
