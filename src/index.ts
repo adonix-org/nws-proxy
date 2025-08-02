@@ -58,7 +58,6 @@ function getRequestHeaders(request: Request, env: Env): Headers {
     if (featureFlags) {
         headers.set("Feature-Flags", featureFlags);
     }
-    console.log(headers);
     return headers;
 }
 
