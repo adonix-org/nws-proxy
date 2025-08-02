@@ -12,7 +12,6 @@
  */
 
 export default {
-    // Testing deployment
     async fetch(request): Promise<Response> {
         if (request.method === "OPTIONS") {
             // Handle preflight OPTIONS request
