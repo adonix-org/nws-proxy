@@ -11,8 +11,12 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+interface Env {
+    NWS_USER_AGENT: string;
+}
+
 export default {
-    async fetch(request): Promise<Response> {
+    async fetch(request, env): Promise<Response> {
         if (request.method === "OPTIONS") {
             // Handle preflight OPTIONS request
             return new Response(null, {
@@ -30,7 +34,7 @@ export default {
         targetUrl.search = url.search;
 
         const response = await fetch(targetUrl, {
-            headers: getRequestHeaders(request),
+            headers: getRequestHeaders(request, env),
         });
 
         return new Response(response.body, {
@@ -40,10 +44,10 @@ export default {
     },
 } satisfies ExportedHandler<Env>;
 
-function getRequestHeaders(request: Request): Headers {
+function getRequestHeaders(request: Request, env: Env): Headers {
     const headers = new Headers();
     headers.set("Accept", "application/geo+json");
-    headers.set("User-Agent", "tybusby.com tybusby@gmail.com");
+    headers.set("User-Agent", env.NWS_USER_AGENT);
 
     const modifed = request.headers.get("If-Modified-Since");
     if (modifed) {
@@ -54,6 +58,7 @@ function getRequestHeaders(request: Request): Headers {
     if (featureFlags) {
         headers.set("Feature-Flags", featureFlags);
     }
+    console.log(headers);
     return headers;
 }
 
