@@ -65,7 +65,7 @@ function getResponseHeaders(response: Response): Headers {
     return addCorsHeaders(headers);
 }
 
-function getCorsHeaders() {
+function getCorsHeaders(): Headers {
     return addCorsHeaders(new Headers());
 }
 
