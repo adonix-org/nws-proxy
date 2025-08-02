@@ -11,12 +11,12 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-interface Env {
+export interface Env {
     NWS_USER_AGENT: string;
 }
 
 export default {
-    async fetch(request, env): Promise<Response> {
+    async fetch(request, env: Env, ctx: ExecutionContext): Promise<Response> {
         if (request.method === "OPTIONS") {
             // Handle preflight OPTIONS request
             return new Response(null, {
