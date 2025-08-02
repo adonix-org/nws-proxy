@@ -11,8 +11,6 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
-const ALLOWED_ORIGINS = ["https://www.tybusby.com", "http://localhost"];
-
 export default {
     // Testing deployment
     async fetch(request): Promise<Response> {
