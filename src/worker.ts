@@ -40,6 +40,10 @@ export class NWSProxyWorker extends BasicWorker {
     }
 
     public override getAllowOrigins(): string[] {
-        return ["https://www.tybusby.com", "https://localhost:8787"];
+        try {
+            return JSON.parse(this.env.ALLOWED_ORIGINS);
+        } catch (error) {
+            return [];
+        }
     }
 }
