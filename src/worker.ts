@@ -38,4 +38,8 @@ export class NWSProxyWorker extends BasicWorker {
     public override getAllowHeaders(): string[] {
         return [...super.getAllowHeaders(), "Feature-Flags"];
     }
+
+    public override getAllowOrigins(): string[] {
+        return ["https://www.tybusby.com", "https://localhost:8787"];
+    }
 }
