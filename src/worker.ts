@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BasicWorker, ClonedResponse, WorkerResponse } from "@adonix.org/cloud-spark";
+import { BasicWorker, ClonedResponse } from "@adonix.org/cloud-spark";
 
 export class NWSProxyWorker extends BasicWorker {
     private static readonly NWS_API = "https://api.weather.gov";
