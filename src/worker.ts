@@ -43,7 +43,7 @@ export class NWSProxyWorker extends BasicWorker {
         try {
             return JSON.parse(this.env.ALLOWED_ORIGINS);
         } catch (error) {
-            console.error(error);
+            console.error("Error parsing ALLOWED_ORIGINS", error);
             return [];
         }
     }
