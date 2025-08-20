@@ -1,6 +1,27 @@
 {
     "name": "nws-proxy",
     "version": "0.0.2",
+    "description": "A Cloudflare Worker Proxy to the NWS API",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Ty Busby",
+        "email": "tybusby@adonix.org",
+        "url": "https://www.adonix.org"
+    },
+    "keywords": [
+        "cloudflare",
+        "workers",
+        "typescript",
+        "proxy"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/adonix-org/nws-proxy"
+    },
+    "bugs": {
+        "email": "support@adonix.org",
+        "url": "https://github.com/adonix-org/nws-proxy/issues"
+    },
     "scripts": {
         "deploy": "tsc && wrangler deploy",
         "dev": "wrangler dev",
