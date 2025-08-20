@@ -1,2 +1,2 @@
-# nws-proxy
-Cloudflare worker NWS proxy
+# ☁️ nws-proxy
+A Cloudflare Worker Proxy to the NWS API
