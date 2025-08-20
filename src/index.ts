@@ -14,68 +14,8 @@
  * limitations under the License.
  */
 
-export interface Env {
-    NWS_USER_AGENT: string;
-}
+import { NWSProxyWorker } from "./worker";
 
 export default {
-    async fetch(request, env: Env, ctx: ExecutionContext): Promise<Response> {
-        if (request.method === "OPTIONS") {
-            // Handle preflight OPTIONS request
-            return new Response(null, {
-                status: 204,
-                headers: getCorsHeaders(),
-            });
-        }
-
-        if (request.method !== "GET") {
-            return new Response("Method Not Allowed", { status: 405 });
-        }
-
-        const source = new URL(request.url);
-        const target = new URL(source.pathname, `https://api.weather.gov`);
-        target.search = source.search;
-
-        const response = await fetch(target, {
-            headers: getRequestHeaders(request, env),
-        });
-
-        return new Response(response.body, {
-            status: response.status,
-            headers: getResponseHeaders(response),
-        });
-    },
+    fetch: (request: Request, env: Env, ctx: ExecutionContext) => new NWSProxyWorker(request, env, ctx).fetch(),
 } satisfies ExportedHandler<Env>;
-
-function getRequestHeaders(request: Request, env: Env): Headers {
-    const headers = new Headers();
-    headers.set("Accept", "application/geo+json");
-    headers.set("User-Agent", env.NWS_USER_AGENT);
-
-    const modifed = request.headers.get("If-Modified-Since");
-    if (modifed) {
-        headers.set("If-Modified-Since", modifed);
-    }
-
-    const featureFlags = request.headers.get("Feature-Flags");
-    if (featureFlags) {
-        headers.set("Feature-Flags", featureFlags);
-    }
-    return headers;
-}
-
-function getResponseHeaders(response: Response): Headers {
-    const headers = new Headers(response.headers);
-    return addCorsHeaders(headers);
-}
-
-function getCorsHeaders(): Headers {
-    return addCorsHeaders(new Headers());
-}
-
-function addCorsHeaders(headers: Headers): Headers {
-    headers.set("Access-Control-Allow-Origin", "*");
-    headers.set("Access-Control-Allow-Headers", "*");
-    headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-    return headers;
-}
