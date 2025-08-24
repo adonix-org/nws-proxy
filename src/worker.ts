@@ -26,6 +26,10 @@ const LONG_CACHE: CacheControl = {
 
 export class NWSProxyWorker extends BasicWorker {
     private static readonly NWS_API = "https://api.weather.gov";
+    private static readonly CACHE_PATHS: RegExp[] = [
+        /^\/gridpoints\/([A-Z]{3})\/\d+,\d+\/stations$/,
+        /^\/points\/-?\d+(\.\d+)?,-?\d+(\.\d+)?$/,
+    ];
 
     protected override async get(): Promise<Response> {
         const source = new URL(this.request.url);
@@ -34,29 +38,26 @@ export class NWSProxyWorker extends BasicWorker {
         const headers = new Headers(this.request.headers);
         headers.set("User-Agent", this.env.NWS_USER_AGENT);
 
-        const request = new Request(target, {
-            body: this.request.body,
-            method: this.request.method,
-            headers,
-        });
+        const response = await fetch(
+            new Request(target, {
+                method: this.request.method,
+                body: this.request.body,
+                headers,
+            })
+        );
 
-        const response = await fetch(request);
-        let cache: CacheControl | undefined = undefined;
-        if (response.ok) {
-            cache = this.getCacheControl(target);
-        }
+        const cache = response.ok ? this.getCacheControl(target) : undefined;
 
-        return this.getResponse(ClonedResponse, await fetch(request), cache);
+        return this.getResponse(ClonedResponse, response, cache);
     }
 
     protected getCacheControl(url: URL): CacheControl | undefined {
-        const paths = ["^/gridpoints/([A-Z]{3})/\\d+,\\d+/stations$", "^/points/-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$"];
-        for (const path of paths) {
-            if (new RegExp(path).test(url.pathname)) {
+        for (const re of NWSProxyWorker.CACHE_PATHS) {
+            if (re.test(url.pathname)) {
                 return LONG_CACHE;
             }
         }
-        return;
+        return undefined;
     }
 
     public override getAllowHeaders(): string[] {
