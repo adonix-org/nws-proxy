@@ -14,7 +14,15 @@
  * limitations under the License.
  */
 
-import { BasicWorker, ClonedResponse } from "@adonix.org/cloud-spark";
+import { BasicWorker, Cache, CacheControl, ClonedResponse, Time } from "@adonix.org/cloud-spark";
+
+const LONG_CACHE: CacheControl = {
+    public: true,
+    "max-age": Time.Week,
+    "s-maxage": Time.Week,
+    "stale-while-revalidate": 4 * Time.Week,
+    "stale-if-error": Time.Week,
+};
 
 export class NWSProxyWorker extends BasicWorker {
     private static readonly NWS_API = "https://api.weather.gov";
@@ -32,7 +40,23 @@ export class NWSProxyWorker extends BasicWorker {
             headers,
         });
 
-        return this.getResponse(ClonedResponse, await fetch(request));
+        const response = await fetch(request);
+        let cache: CacheControl | undefined = undefined;
+        if (response.ok) {
+            cache = this.getCacheControl(target);
+        }
+
+        return this.getResponse(ClonedResponse, await fetch(request), cache);
+    }
+
+    protected getCacheControl(url: URL): CacheControl | undefined {
+        const paths = ["^/gridpoints/([A-Z]{3})/\\d+,\\d+/stations$", "^/points/-?\\d+(\\.\\d+)?,-?\\d+(\\.\\d+)?$"];
+        for (const path of paths) {
+            if (new RegExp(path).test(url.pathname)) {
+                return LONG_CACHE;
+            }
+        }
+        return;
     }
 
     public override getAllowHeaders(): string[] {
