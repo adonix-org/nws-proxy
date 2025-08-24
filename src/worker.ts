@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BasicWorker, Cache, CacheControl, ClonedResponse, Time } from "@adonix.org/cloud-spark";
+import { BasicWorker, CacheControl, ClonedResponse, Time } from "@adonix.org/cloud-spark";
 
 const LONG_CACHE: CacheControl = {
     public: true,
@@ -34,6 +34,9 @@ export class NWSProxyWorker extends BasicWorker {
     protected override async get(): Promise<Response> {
         const source = new URL(this.request.url);
         const target = new URL(source.pathname + source.search, NWSProxyWorker.NWS_API);
+
+        const cached = await this.getCachedResponse();
+        if (cached) return cached;
 
         const headers = new Headers(this.request.headers);
         headers.set("User-Agent", this.env.NWS_USER_AGENT);
