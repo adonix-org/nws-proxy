@@ -49,9 +49,7 @@ export class NWSProxyWorker extends BasicWorker {
             })
         );
 
-        const cache = response.ok ? this.getCacheControl(target) : undefined;
-
-        return this.getResponse(ClonedResponse, response, cache);
+        return this.getResponse(ClonedResponse, response, this.getCacheControl(target));
     }
 
     protected getCacheControl(url: URL): CacheControl | undefined {
