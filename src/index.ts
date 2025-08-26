@@ -16,6 +16,4 @@
 
 import { NWSProxyWorker } from "./worker";
 
-export default {
-    fetch: (request: Request, env: Env, ctx: ExecutionContext) => new NWSProxyWorker(request, env, ctx).fetch(),
-} satisfies ExportedHandler<Env>;
+export default NWSProxyWorker.ignite();
