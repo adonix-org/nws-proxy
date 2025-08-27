@@ -31,12 +31,13 @@ export class NWSProxyWorker extends BasicWorker {
         /^\/points\/-?\d+(\.\d+)?,-?\d+(\.\d+)?$/,
     ];
 
+    public override async dispatch(): Promise<Response> {
+        return (await this.getCachedResponse()) ?? super.dispatch();
+    }
+
     protected override async get(): Promise<Response> {
         const source = new URL(this.request.url);
         const target = new URL(source.pathname + source.search, NWSProxyWorker.NWS_API);
-
-        const cached = await this.getCachedResponse();
-        if (cached) return cached;
 
         const headers = new Headers(this.request.headers);
         headers.set("User-Agent", this.env.NWS_USER_AGENT);
