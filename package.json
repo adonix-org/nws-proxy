@@ -33,9 +33,9 @@
         "@cloudflare/vitest-pool-workers": "^0.8.67",
         "typescript": "^5.9.2",
         "vitest": "~3.2.4",
-        "wrangler": "^4.33.0"
+        "wrangler": "^4.33.1"
     },
     "dependencies": {
-        "@adonix.org/cloud-spark": "^0.0.98"
+        "@adonix.org/cloud-spark": "^0.0.99"
     }
 }
