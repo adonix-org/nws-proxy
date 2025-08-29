@@ -1,7 +1,19 @@
-/**
- * For more details on how to configure Wrangler, refer to:
- * https://developers.cloudflare.com/workers/wrangler/configuration/
+/*
+ * Copyright (C) 2025 Ty Busby
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
+
 {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "nws-proxy",
@@ -9,42 +21,5 @@
     "compatibility_date": "2025-08-01",
     "observability": {
         "enabled": true
-    },
-    "vars": {
-        "ALLOWED_ORIGINS": "[\"https://www.tybusby.com\", \"http://localhost:5173\"]"
     }
-    /**
-     * Smart Placement
-     * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
-     */
-    // "placement": { "mode": "smart" },
-
-    /**
-     * Bindings
-     * Bindings allow your Worker to interact with resources on the Cloudflare Developer Platform, including
-     * databases, object storage, AI inference, real-time communication and more.
-     * https://developers.cloudflare.com/workers/runtime-apis/bindings/
-     */
-
-    /**
-     * Environment Variables
-     * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
-     */
-    // "vars": { "MY_VARIABLE": "production_value" },
-    /**
-     * Note: Use secrets to store sensitive data.
-     * https://developers.cloudflare.com/workers/configuration/secrets/
-     */
-
-    /**
-     * Static Assets
-     * https://developers.cloudflare.com/workers/static-assets/binding/
-     */
-    // "assets": { "directory": "./public/", "binding": "ASSETS" },
-
-    /**
-     * Service Bindings (communicate between multiple Workers)
-     * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
-     */
-    // "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
 }
