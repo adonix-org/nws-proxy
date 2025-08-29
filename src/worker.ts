@@ -65,13 +65,4 @@ export class NWSProxyWorker extends BasicWorker {
     public override getAllowHeaders(): string[] {
         return [...super.getAllowHeaders(), "Feature-Flags"];
     }
-
-    public override getAllowOrigins(): string[] {
-        try {
-            return JSON.parse(this.env.ALLOWED_ORIGINS);
-        } catch (error) {
-            console.error("Error parsing ALLOWED_ORIGINS", this.env.ALLOWED_ORIGINS, error);
-            return [];
-        }
-    }
 }
