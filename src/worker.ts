@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import { BasicWorker, CacheControl, ClonedResponse, CorsHandler, CorsProvider, DEFAULT_CORS_CONFIG, Time } from "@adonix.org/cloud-spark";
+import {
+    BasicWorker,
+    CacheControl,
+    CacheHandler,
+    ClonedResponse,
+    CorsHandler,
+    CorsProvider,
+    DEFAULT_CORS_CONFIG,
+    Time,
+} from "@adonix.org/cloud-spark";
 
 const LONG_CACHE: CacheControl = {
     public: true,
@@ -39,6 +48,7 @@ export class NWSProxyWorker extends BasicWorker {
                 })
             )
         );
+        this.use(new CacheHandler());
     }
 
     protected override async get(): Promise<Response> {
