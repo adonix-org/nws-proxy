@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { BasicWorker, CacheControl, ClonedResponse, Time } from "@adonix.org/cloud-spark";
+import { BasicWorker, CacheControl, ClonedResponse, CorsHandler, CorsProvider, DEFAULT_CORS_CONFIG, Time } from "@adonix.org/cloud-spark";
 
 const LONG_CACHE: CacheControl = {
     public: true,
@@ -30,6 +30,16 @@ export class NWSProxyWorker extends BasicWorker {
         /^\/gridpoints\/([A-Z]{3})\/\d+,\d+\/stations$/,
         /^\/points\/-?\d+(\.\d+)?,-?\d+(\.\d+)?$/,
     ];
+
+    protected setup(): void {
+        this.use(
+            new CorsHandler(
+                new CorsProvider({
+                    allowedHeaders: [...DEFAULT_CORS_CONFIG.allowedHeaders, "Feature-Flags"],
+                })
+            )
+        );
+    }
 
     protected override async get(): Promise<Response> {
         const source = new URL(this.request.url);
@@ -56,9 +66,5 @@ export class NWSProxyWorker extends BasicWorker {
             }
         }
         return undefined;
-    }
-
-    public override getAllowedHeaders(): string[] {
-        return [...super.getAllowedHeaders(), "Feature-Flags"];
     }
 }
