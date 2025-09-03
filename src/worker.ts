@@ -20,7 +20,6 @@ import {
     ClonedResponse,
     CorsHandler,
     Method,
-    RouteParams,
     RouteWorker,
     Time,
 } from "@adonix.org/cloud-spark";
@@ -46,7 +45,7 @@ export class NWSProxyWorker extends RouteWorker {
         this.use(new CacheHandler());
     }
 
-    private async addLongCache(params: RouteParams): Promise<Response> {
+    protected async addLongCache(): Promise<Response> {
         return this.getResponse(ClonedResponse, await this.get(), LONG_CACHE);
     }
 
