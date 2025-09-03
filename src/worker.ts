@@ -40,7 +40,7 @@ export class NWSProxyWorker extends BasicWorker {
         /^\/points\/-?\d+(\.\d+)?,-?\d+(\.\d+)?$/,
     ];
 
-    protected setup(): void {
+    protected override init(): void {
         this.use(
             new CorsHandler(
                 new CorsProvider({
