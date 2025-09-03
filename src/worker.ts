@@ -15,11 +15,13 @@
  */
 
 import {
-    BasicWorker,
     CacheControl,
     CacheHandler,
     ClonedResponse,
     CorsHandler,
+    Method,
+    RouteParams,
+    RouteWorker,
     Time,
 } from "@adonix.org/cloud-spark";
 
@@ -31,16 +33,21 @@ const LONG_CACHE: CacheControl = {
     "stale-if-error": Time.Week,
 };
 
-export class NWSProxyWorker extends BasicWorker {
+export class NWSProxyWorker extends RouteWorker {
     private static readonly NWS_API = "https://api.weather.gov";
-    private static readonly CACHE_PATHS: RegExp[] = [
-        /^\/gridpoints\/([A-Z]{3})\/\d+,\d+\/stations$/,
-        /^\/points\/-?\d+(\.\d+)?,-?\d+(\.\d+)?$/,
-    ];
 
     protected override init(): void {
+        this.load([
+            [Method.GET, "/points/:coordinates", this.addLongCache],
+            [Method.GET, "/gridpoints/:wfo/:xy/stations", this.addLongCache],
+        ]);
         this.use(new CorsHandler({ allowedHeaders: ["Content-Type", "Feature-Flags"] }));
         this.use(new CacheHandler());
+    }
+
+    private async addLongCache(params: RouteParams): Promise<Response> {
+        console.log({ ...params });
+        return this.getResponse(ClonedResponse, await this.get(), LONG_CACHE);
     }
 
     protected override async get(): Promise<Response> {
@@ -50,23 +57,12 @@ export class NWSProxyWorker extends BasicWorker {
         const headers = new Headers(this.request.headers);
         headers.set("User-Agent", this.env.NWS_USER_AGENT);
 
-        const response = await fetch(
+        return await fetch(
             new Request(target, {
                 method: this.request.method,
                 body: this.request.body,
                 headers,
             })
         );
-
-        return this.getResponse(ClonedResponse, response, this.getCacheControl(target));
-    }
-
-    protected getCacheControl(url: URL): CacheControl | undefined {
-        for (const re of NWSProxyWorker.CACHE_PATHS) {
-            if (re.test(url.pathname)) {
-                return LONG_CACHE;
-            }
-        }
-        return undefined;
     }
 }
