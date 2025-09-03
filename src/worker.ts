@@ -46,7 +46,6 @@ export class NWSProxyWorker extends RouteWorker {
     }
 
     private async addLongCache(params: RouteParams): Promise<Response> {
-        console.log({ ...params });
         return this.getResponse(ClonedResponse, await this.get(), LONG_CACHE);
     }
 
