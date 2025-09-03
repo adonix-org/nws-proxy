@@ -41,6 +41,7 @@ export class NWSProxyWorker extends RouteWorker {
             [Method.GET, "/points/:coordinates", this.addLongCache],
             [Method.GET, "/gridpoints/:wfo/:xy/stations", this.addLongCache],
         ]);
+
         this.use(new CorsHandler({ allowedHeaders: ["Content-Type", "Feature-Flags"] }));
         this.use(new CacheHandler());
     }
