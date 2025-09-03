@@ -19,9 +19,8 @@ import {
     CacheControl,
     CacheHandler,
     ClonedResponse,
+    CorsConfig,
     CorsHandler,
-    CorsProvider,
-    DEFAULT_CORS_CONFIG,
     Time,
 } from "@adonix.org/cloud-spark";
 
@@ -41,13 +40,10 @@ export class NWSProxyWorker extends BasicWorker {
     ];
 
     protected override init(): void {
-        this.use(
-            new CorsHandler(
-                new CorsProvider({
-                    allowedHeaders: [...DEFAULT_CORS_CONFIG.allowedHeaders, "Feature-Flags"],
-                })
-            )
-        );
+        const config: CorsConfig = {
+            allowedHeaders: ["Content-Type", "Feature-Flags"],
+        };
+        this.use(new CorsHandler(config));
         this.use(new CacheHandler());
     }
 
