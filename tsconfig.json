@@ -51,9 +51,8 @@
         "strict": true,
 
         /* Skip type checking all .d.ts files. */
-        "skipLibCheck": true,
-        "types": ["./types/wrangler.d.ts"]
+        "skipLibCheck": true
     },
     "exclude": ["test"],
-    "include": ["src/**/*.ts"]
+    "include": ["types", "src/**/*.ts"]
 }
