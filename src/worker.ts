@@ -46,7 +46,10 @@ export class NWSProxyWorker extends RouteWorker {
     }
 
     protected async addLongCache(): Promise<Response> {
-        return this.getResponse(ClonedResponse, await this.get(), LONG_CACHE);
+        const response = await this.get();
+        if (!response.ok) return response;
+
+        return this.getResponse(ClonedResponse, response, LONG_CACHE);
     }
 
     protected override async get(): Promise<Response> {
