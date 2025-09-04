@@ -33,7 +33,7 @@ const LONG_CACHE: CacheControl = {
 };
 
 export class NWSProxyWorker extends RouteWorker {
-    private static readonly NWS_API = "https://api.weather.gov";
+    private static readonly NWS_BASE_URL = "https://api.weather.gov";
 
     protected override init(): void {
         this.load([
@@ -51,7 +51,7 @@ export class NWSProxyWorker extends RouteWorker {
 
     protected override async get(): Promise<Response> {
         const source = new URL(this.request.url);
-        const target = new URL(source.pathname + source.search, NWSProxyWorker.NWS_API);
+        const target = new URL(source.pathname + source.search, NWSProxyWorker.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
         headers.set("User-Agent", this.env.NWS_USER_AGENT);
