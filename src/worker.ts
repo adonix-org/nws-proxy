@@ -18,7 +18,9 @@ import {
     CacheControl,
     CacheHandler,
     ClonedResponse,
+    CorsConfig,
     CorsHandler,
+    HttpHeader,
     Method,
     RouteWorker,
     Time,
@@ -41,7 +43,11 @@ export class NWSProxyWorker extends RouteWorker {
             [Method.GET, "/gridpoints/:wfo/:xy/stations", this.addLongCache],
         ]);
 
-        this.use(new CorsHandler({ allowedHeaders: ["Content-Type", "Feature-Flags"] }));
+        const corsConfig: Partial<CorsConfig> = {
+            allowedHeaders: ["Feature-Flags"],
+            exposedHeaders: ["X-Correlation-Id", "X-Request-Id", "X-Server-Id"],
+        };
+        this.use(new CorsHandler(corsConfig));
         this.use(new CacheHandler());
     }
 
@@ -57,7 +63,7 @@ export class NWSProxyWorker extends RouteWorker {
         const target = new URL(source.pathname + source.search, NWSProxyWorker.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
-        headers.set("User-Agent", this.env.NWS_USER_AGENT);
+        headers.set(HttpHeader.USER_AGENT, this.env.NWS_USER_AGENT);
 
         return await fetch(
             new Request(target, {
