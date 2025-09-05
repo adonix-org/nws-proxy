@@ -41,6 +41,7 @@ export class NWSProxyWorker extends RouteWorker {
         this.load([
             [Method.GET, "/points/:coordinates", this.addLongCache],
             [Method.GET, "/gridpoints/:wfo/:xy/stations", this.addLongCache],
+            [Method.GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
         const corsConfig: Partial<CorsConfig> = {
@@ -56,6 +57,20 @@ export class NWSProxyWorker extends RouteWorker {
         if (!response.ok) return response;
 
         return this.getResponse(ClonedResponse, response, LONG_CACHE);
+    }
+
+    protected async observations(): Promise<Response> {
+        const response = await this.get();
+        if (!response.ok) return response;
+
+        const cache: CacheControl = {
+            public: true,
+            "max-age": 300,
+            "s-maxage": 300,
+            "stale-while-revalidate": 900,
+        };
+
+        return this.getResponse(ClonedResponse, response, cache);
     }
 
     protected override async get(): Promise<Response> {
