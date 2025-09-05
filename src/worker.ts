@@ -26,21 +26,13 @@ import {
     Time,
 } from "@adonix.org/cloud-spark";
 
-const LONG_CACHE: CacheControl = {
-    public: true,
-    "max-age": Time.Week,
-    "s-maxage": Time.Week,
-    "stale-while-revalidate": 4 * Time.Week,
-    "stale-if-error": Time.Week,
-};
-
 export class NWSProxyWorker extends RouteWorker {
     private static readonly NWS_BASE_URL = "https://api.weather.gov";
 
     protected override init(): void {
         this.load([
-            [Method.GET, "/points/:coordinates", this.addLongCache],
-            [Method.GET, "/gridpoints/:wfo/:xy/stations", this.addLongCache],
+            [Method.GET, "/points/:coordinates", this.points],
+            [Method.GET, "/gridpoints/:wfo/:xy/stations", this.points],
             [Method.GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
@@ -52,11 +44,18 @@ export class NWSProxyWorker extends RouteWorker {
         this.use(new CacheHandler());
     }
 
-    protected async addLongCache(): Promise<Response> {
+    protected async points(): Promise<Response> {
         const response = await this.get();
         if (!response.ok) return response;
 
-        return this.getResponse(ClonedResponse, response, LONG_CACHE);
+        const cache: CacheControl = {
+            public: true,
+            "max-age": Time.Week,
+            "s-maxage": Time.Week,
+            "stale-while-revalidate": 4 * Time.Week,
+            "stale-if-error": Time.Week,
+        };
+        return this.getResponse(ClonedResponse, response, cache);
     }
 
     protected async observations(): Promise<Response> {
@@ -65,9 +64,9 @@ export class NWSProxyWorker extends RouteWorker {
 
         const cache: CacheControl = {
             public: true,
-            "max-age": 300,
-            "s-maxage": 300,
-            "stale-while-revalidate": 900,
+            "max-age": 5 * Time.Minute,
+            "s-maxage": 5 * Time.Minute,
+            "stale-while-revalidate": 10 * Time.Minute,
         };
 
         return this.getResponse(ClonedResponse, response, cache);
