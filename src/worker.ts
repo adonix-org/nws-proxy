@@ -18,8 +18,8 @@ import {
     CacheControl,
     CacheHandler,
     ClonedResponse,
-    CorsConfig,
     CorsHandler,
+    CorsInit,
     HttpHeader,
     Method,
     RouteWorker,
@@ -36,7 +36,7 @@ export class NWSProxyWorker extends RouteWorker {
             [Method.GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
-        const corsConfig: Partial<CorsConfig> = {
+        const corsConfig: CorsInit = {
             allowedHeaders: ["Feature-Flags"],
             exposedHeaders: ["X-Correlation-Id", "X-Request-Id", "X-Server-Id"],
         };
