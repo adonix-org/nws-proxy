@@ -40,6 +40,7 @@ export class NWSProxyWorker extends RouteWorker {
             allowedHeaders: ["Feature-Flags"],
             exposedHeaders: ["X-Correlation-Id", "X-Request-Id", "X-Server-Id"],
         };
+
         this.use(new CorsHandler(corsConfig));
         this.use(new CacheHandler());
     }
