@@ -30,7 +30,7 @@ export class NWSProxyWorker extends RouteWorker {
     private static readonly NWS_BASE_URL = "https://api.weather.gov";
 
     protected override init(): void {
-        this.load([
+        this.table([
             [Method.GET, "/points/:coordinates", this.points],
             [Method.GET, "/gridpoints/:wfo/:xy/stations", this.points],
             [Method.GET, "/stations/:stationId/observations/latest", this.observations],
