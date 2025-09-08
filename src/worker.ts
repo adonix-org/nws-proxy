@@ -20,8 +20,8 @@ import {
     ClonedResponse,
     CorsHandler,
     CorsInit,
+    GET,
     HttpHeader,
-    Method,
     RouteWorker,
     Time,
 } from "@adonix.org/cloud-spark";
@@ -31,9 +31,9 @@ export class NWSProxyWorker extends RouteWorker {
 
     protected override init(): void {
         this.routes([
-            [Method.GET, "/points/:coordinates", this.points],
-            [Method.GET, "/gridpoints/:wfo/:xy/stations", this.points],
-            [Method.GET, "/stations/:stationId/observations/latest", this.observations],
+            [GET, "/points/:coordinates", this.points],
+            [GET, "/gridpoints/:wfo/:xy/stations", this.points],
+            [GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
         const corsConfig: CorsInit = {
