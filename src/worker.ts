@@ -15,10 +15,10 @@
  */
 
 import {
+    cache,
     CacheControl,
-    CacheHandler,
     ClonedResponse,
-    CorsHandler,
+    cors,
     CorsInit,
     GET,
     HttpHeader,
@@ -41,8 +41,8 @@ export class NWSProxyWorker extends RouteWorker {
             exposedHeaders: ["X-Correlation-Id", "X-Request-Id", "X-Server-Id"],
         };
 
-        this.use(new CorsHandler(corsConfig));
-        this.use(new CacheHandler());
+        this.use(cors(corsConfig));
+        this.use(cache());
     }
 
     protected async points(): Promise<Response> {
