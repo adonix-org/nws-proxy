@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { NWSProxyWorker } from "./worker";
+import { NWSProxy } from "./worker";
 
-export default NWSProxyWorker.ignite();
+export default NWSProxy.ignite();

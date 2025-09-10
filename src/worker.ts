@@ -26,7 +26,7 @@ import {
     Time,
 } from "@adonix.org/cloud-spark";
 
-export class NWSProxyWorker extends RouteWorker {
+export class NWSProxy extends RouteWorker {
     private static readonly NWS_BASE_URL = "https://api.weather.gov";
 
     protected override init(): void {
@@ -75,7 +75,7 @@ export class NWSProxyWorker extends RouteWorker {
 
     protected override async get(): Promise<Response> {
         const source = new URL(this.request.url);
-        const target = new URL(source.pathname + source.search, NWSProxyWorker.NWS_BASE_URL);
+        const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
         headers.set(HttpHeader.USER_AGENT, this.env.NWS_USER_AGENT);
