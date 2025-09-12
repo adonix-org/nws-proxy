@@ -45,10 +45,6 @@ export class NWSProxy extends RouteWorker {
         return this.proxy();
     }
 
-    protected override async head(): Promise<Response> {
-        return this.proxy();
-    }
-
     protected async points(): Promise<Response> {
         const response = await this.get();
         if (!response.ok) return response;
