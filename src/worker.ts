@@ -18,8 +18,6 @@ import {
     cache,
     CacheControl,
     ClonedResponse,
-    cors,
-    CorsInit,
     GET,
     HttpHeader,
     RouteWorker,
@@ -36,13 +34,19 @@ export class NWSProxy extends RouteWorker {
             [GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
-        const corsConfig: CorsInit = {
-            allowedHeaders: ["Feature-Flags"],
-            exposedHeaders: ["X-Correlation-Id", "X-Request-Id", "X-Server-Id"],
-        };
-
-        this.use(cors(corsConfig));
         this.use(cache());
+    }
+
+    protected override async get(): Promise<Response> {
+        return this.proxy();
+    }
+
+    protected override async options(): Promise<Response> {
+        return this.proxy();
+    }
+
+    protected override async head(): Promise<Response> {
+        return this.proxy();
     }
 
     protected async points(): Promise<Response> {
@@ -73,7 +77,7 @@ export class NWSProxy extends RouteWorker {
         return this.getResponse(ClonedResponse, response, cache);
     }
 
-    protected override async get(): Promise<Response> {
+    private async proxy(): Promise<Response> {
         const source = new URL(this.request.url);
         const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
 
