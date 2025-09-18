@@ -35,7 +35,7 @@ export class NWSProxy extends RouteWorker {
             [GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
-        this.use(cors({ allowedHeaders: ["Feature-Flags"] }));
+        this.use(cors({ allowedHeaders: ["Feature-Flags"], maxAge: Time.Month }));
         this.use(cache());
     }
 
