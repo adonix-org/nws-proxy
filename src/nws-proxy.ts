@@ -18,6 +18,7 @@ import {
     cache,
     CacheControl,
     ClonedResponse,
+    cors,
     GET,
     HttpHeader,
     RouteWorker,
@@ -34,14 +35,11 @@ export class NWSProxy extends RouteWorker {
             [GET, "/stations/:stationId/observations/latest", this.observations],
         ]);
 
+        this.use(cors({ allowedHeaders: ["Feature-Flags"] }));
         this.use(cache());
     }
 
     protected override async get(): Promise<Response> {
-        return this.proxy();
-    }
-
-    protected override async options(): Promise<Response> {
         return this.proxy();
     }
 
