@@ -54,7 +54,7 @@ export class NWSProxy extends RouteWorker {
             "stale-while-revalidate": 4 * Time.Week,
             "stale-if-error": Time.Week,
         };
-        return this.getResponse(ClonedResponse, response, cache);
+        return this.response(ClonedResponse, response, cache);
     }
 
     protected async observations(): Promise<Response> {
@@ -68,7 +68,7 @@ export class NWSProxy extends RouteWorker {
             "stale-while-revalidate": 10 * Time.Minute,
         };
 
-        return this.getResponse(ClonedResponse, response, cache);
+        return this.response(ClonedResponse, response, cache);
     }
 
     private async proxy(): Promise<Response> {
