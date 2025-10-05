@@ -20,7 +20,6 @@ import {
     ClonedResponse,
     cors,
     GET,
-    HttpHeader,
     RouteWorker,
     Time,
 } from "@adonix.org/cloud-spark";
@@ -76,7 +75,7 @@ export class NWSProxy extends RouteWorker {
         const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
-        headers.set(HttpHeader.USER_AGENT, this.env.NWS_USER_AGENT);
+        headers.set("User-Agent", this.env.NWS_USER_AGENT);
 
         return await fetch(
             new Request(target, {
