@@ -44,7 +44,7 @@ export class NWSProxy extends RouteWorker {
             [GET, "/stations/:id/observations/latest", this.observation],
         ]);
 
-        this.use(cors({ allowedHeaders: ["Feature-Flags"], maxAge: Time.Month }));
+        this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
         this.use(cache());
     }
 
@@ -88,7 +88,7 @@ export class NWSProxy extends RouteWorker {
         const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
-        headers.set("User-Agent", this.env.NWS_USER_AGENT);
+        headers.set("user-agent", this.env.NWS_USER_AGENT);
 
         const response = await fetch(
             new Request(target, {
