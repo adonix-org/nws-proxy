@@ -17,7 +17,7 @@
 import {
     cache,
     CacheControl,
-    ClonedResponse,
+    CopyResponse,
     cors,
     GET,
     RouteWorker,
@@ -27,62 +27,79 @@ import {
 export class NWSProxy extends RouteWorker {
     private static readonly NWS_BASE_URL = "https://api.weather.gov";
 
+    constructor(request: Request, env: Env, ctx: ExecutionContext) {
+        const headers = new Headers(request.headers);
+        headers.delete("cache-control");
+        headers.delete("pragma");
+        super(new Request(request, { headers }), env, ctx);
+    }
+
     protected override init(): void {
         this.routes([
-            [GET, "/points/:coordinates", this.points],
+            [GET, "/alerts/active", this.alerts],
             [GET, "/gridpoints/:wfo/:xy/stations", this.points],
-            [GET, "/stations/:stationId/observations/latest", this.observations],
+            [GET, "/gridpoints/:wfo/:xy/forecast", this.forecast],
+            [GET, "/points/:coordinates", this.points],
+            [GET, "/products/types/:id/locations/:wfo/latest", this.products],
+            [GET, "/stations/:id/observations/latest", this.observation],
         ]);
 
         this.use(cors({ allowedHeaders: ["Feature-Flags"], maxAge: Time.Month }));
         this.use(cache());
     }
 
-    protected override async get(): Promise<Response> {
-        return this.proxy();
-    }
-
-    protected async points(): Promise<Response> {
-        const response = await this.get();
-        if (!response.ok) return response;
-
-        const cache: CacheControl = {
-            public: true,
-            "max-age": Time.Week,
-            "s-maxage": Time.Week,
-            "stale-while-revalidate": 4 * Time.Week,
-            "stale-if-error": Time.Week,
+    private async points(): Promise<Response> {
+        const edge: CacheControl = {
+            "s-maxage": Time.Year,
         };
-        return this.response(ClonedResponse, response, cache);
+        return this.proxy(edge);
     }
 
-    protected async observations(): Promise<Response> {
-        const response = await this.get();
-        if (!response.ok) return response;
-
-        const cache: CacheControl = {
-            public: true,
-            "max-age": 5 * Time.Minute,
-            "s-maxage": 5 * Time.Minute,
-            "stale-while-revalidate": 10 * Time.Minute,
+    private async alerts(): Promise<Response> {
+        const edge: CacheControl = {
+            "s-maxage": 10 * Time.Minute,
         };
-
-        return this.response(ClonedResponse, response, cache);
+        return this.proxy(edge);
     }
 
-    private async proxy(): Promise<Response> {
+    private async forecast(): Promise<Response> {
+        const edge: CacheControl = {
+            "s-maxage": Time.Hour,
+        };
+        return this.proxy(edge);
+    }
+
+    private async products(): Promise<Response> {
+        const edge: CacheControl = {
+            "s-maxage": 10 * Time.Minute,
+        };
+        return this.proxy(edge);
+    }
+
+    private async observation(): Promise<Response> {
+        const edge: CacheControl = {
+            "s-maxage": 10 * Time.Minute,
+        };
+        return this.proxy(edge);
+    }
+
+    private async proxy(cache?: CacheControl): Promise<Response> {
         const source = new URL(this.request.url);
         const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
         headers.set("User-Agent", this.env.NWS_USER_AGENT);
 
-        return await fetch(
+        const response = await fetch(
             new Request(target, {
                 method: this.request.method,
-                body: this.request.body,
                 headers,
             })
         );
+
+        if (!response.ok || !cache) return response;
+
+        const existing = CacheControl.parse(response.headers.get("cache-control") ?? "");
+        return this.response(CopyResponse, response, { ...existing, ...cache });
     }
 }
