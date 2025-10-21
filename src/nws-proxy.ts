@@ -50,9 +50,9 @@ export class NWSProxy extends RouteWorker {
         this.use(cache());
     }
 
-    private points(): Promise<Response> {
+    private alerts(): Promise<Response> {
         const edge: CacheControl = {
-            "s-maxage": Time.Year,
+            "s-maxage": 10 * Time.Minute,
         };
         return this.proxy(edge);
     }
@@ -67,16 +67,16 @@ export class NWSProxy extends RouteWorker {
         return this.proxy(edge, source);
     }
 
-    private alerts(): Promise<Response> {
+    private forecast(): Promise<Response> {
         const edge: CacheControl = {
-            "s-maxage": 10 * Time.Minute,
+            "s-maxage": Time.Hour,
         };
         return this.proxy(edge);
     }
 
-    private forecast(): Promise<Response> {
+    private points(): Promise<Response> {
         const edge: CacheControl = {
-            "s-maxage": Time.Hour,
+            "s-maxage": Time.Year,
         };
         return this.proxy(edge);
     }
