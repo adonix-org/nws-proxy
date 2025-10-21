@@ -21,6 +21,7 @@ import {
     cors,
     GET,
     RouteWorker,
+    StatusCodes,
     Time,
 } from "@adonix.org/cloud-spark";
 
@@ -49,14 +50,14 @@ export class NWSProxy extends RouteWorker {
         this.use(cache());
     }
 
-    private async points(): Promise<Response> {
+    private points(): Promise<Response> {
         const edge: CacheControl = {
             "s-maxage": Time.Year,
         };
         return this.proxy(edge);
     }
 
-    private async stations(): Promise<Response> {
+    private stations(): Promise<Response> {
         const edge: CacheControl = {
             "s-maxage": Time.Year,
         };
@@ -66,28 +67,28 @@ export class NWSProxy extends RouteWorker {
         return this.proxy(edge, source);
     }
 
-    private async alerts(): Promise<Response> {
+    private alerts(): Promise<Response> {
         const edge: CacheControl = {
             "s-maxage": 10 * Time.Minute,
         };
         return this.proxy(edge);
     }
 
-    private async forecast(): Promise<Response> {
+    private forecast(): Promise<Response> {
         const edge: CacheControl = {
             "s-maxage": Time.Hour,
         };
         return this.proxy(edge);
     }
 
-    private async products(): Promise<Response> {
+    private products(): Promise<Response> {
         const edge: CacheControl = {
             "s-maxage": 10 * Time.Minute,
         };
         return this.proxy(edge);
     }
 
-    private async observation(): Promise<Response> {
+    private observation(): Promise<Response> {
         const edge: CacheControl = {
             "s-maxage": 10 * Time.Minute,
         };
@@ -110,7 +111,7 @@ export class NWSProxy extends RouteWorker {
             })
         );
 
-        if (!response.ok || !cache) return response;
+        if (response.status !== StatusCodes.OK || !cache) return response;
 
         const existing = CacheControl.parse(response.headers.get("cache-control") ?? "");
         return this.response(CopyResponse, response, { ...existing, ...cache });
