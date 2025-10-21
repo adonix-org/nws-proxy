@@ -38,7 +38,7 @@ export class NWSProxy extends RouteWorker {
     protected override init(): void {
         this.routes([
             [GET, "/alerts/active", this.alerts],
-            [GET, "/gridpoints/:wfo/:xy/stations", this.points],
+            [GET, "/gridpoints/:wfo/:xy/stations", this.stations],
             [GET, "/gridpoints/:wfo/:xy/forecast", this.forecast],
             [GET, "/points/:coordinates", this.points],
             [GET, "/products/types/:id/locations/:wfo/latest", this.products],
@@ -54,6 +54,16 @@ export class NWSProxy extends RouteWorker {
             "s-maxage": Time.Year,
         };
         return this.proxy(edge);
+    }
+
+    private async stations(): Promise<Response> {
+        const edge: CacheControl = {
+            "s-maxage": Time.Year,
+        };
+
+        const source = new URL(this.request.url);
+        source.searchParams.set("limit", "1");
+        return this.proxy(edge, source);
     }
 
     private async alerts(): Promise<Response> {
@@ -84,8 +94,10 @@ export class NWSProxy extends RouteWorker {
         return this.proxy(edge);
     }
 
-    private async proxy(cache?: CacheControl): Promise<Response> {
-        const source = new URL(this.request.url);
+    private async proxy(
+        cache?: CacheControl,
+        source: URL = new URL(this.request.url)
+    ): Promise<Response> {
         const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
 
         const headers = new Headers(this.request.headers);
