@@ -31,6 +31,7 @@ export class NWSProxy extends RouteWorker {
         const headers = new Headers(request.headers);
         headers.delete("cache-control");
         headers.delete("pragma");
+        headers.delete("accept-language");
         super(new Request(request, { headers }), env, ctx);
     }
 
