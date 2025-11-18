@@ -18,7 +18,7 @@
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "nws-proxy",
     "main": "src/index.ts",
-    "compatibility_date": "2025-10-22",
+    "compatibility_date": "2025-11-18",
     "observability": {
         "enabled": true
     },
