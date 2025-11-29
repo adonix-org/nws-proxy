@@ -15,105 +15,71 @@
  */
 
 import {
-    cache,
+    BasicWorker,
     CacheControl,
     CopyResponse,
-    cors,
-    GET,
-    RouteWorker,
     StatusCodes,
     Time,
 } from "@adonix.org/cloud-spark";
 
-export class NWSProxy extends RouteWorker {
-    private static readonly NWS_BASE_URL = "https://api.weather.gov";
+export abstract class NwsProxy extends BasicWorker {
+    public static readonly NWS_BASE_URL = "https://api.weather.gov";
+    public static readonly KV_DO_PREFIX = "nws:do:";
 
     constructor(request: Request, env: Env, ctx: ExecutionContext) {
         const headers = new Headers(request.headers);
         headers.delete("cache-control");
         headers.delete("pragma");
         headers.delete("accept-language");
-        super(new Request(request, { headers }), env, ctx);
+
+        headers.set("user-agent", env.NWS_USER_AGENT);
+
+        const source = new URL(request.url);
+        const target = new URL(source.pathname + source.search, NwsProxy.NWS_BASE_URL);
+        super(new Request(target, { headers, method: request.method }), env, ctx);
     }
 
-    protected override init(): void {
-        this.routes([
-            [GET, "/alerts/active", this.alerts],
-            [GET, "/gridpoints/:wfo/:xy/stations", this.stations],
-            [GET, "/gridpoints/:wfo/:xy/forecast", this.forecast],
-            [GET, "/points/:coordinates", this.points],
-            [GET, "/products/types/:id/locations/:wfo/latest", this.products],
-            [GET, "/stations/:id/observations/latest", this.observation],
-        ]);
+    protected override async get(): Promise<Response> {
+        const name = this.getName();
+        console.info(name);
 
-        this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
-        this.use(cache());
+        const exists = await this.registered(name);
+
+        const stub = this.env.NWS_STORAGE.getByName(name);
+        const response = await stub.proxy(this.request, this.getTtl());
+
+        if (response.status !== StatusCodes.OK) return response;
+
+        if (!exists) {
+            await this.register(name);
+        }
+
+        const cache = CacheControl.parse(response.headers.get("cache-control") ?? "");
+        return this.response(CopyResponse, response, {
+            ...cache,
+            ...{ "s-maxage": this.getTtl() },
+        });
     }
 
-    private alerts(): Promise<Response> {
-        const edge: CacheControl = {
-            "s-maxage": 10 * Time.Minute,
-        };
-        return this.proxy(edge);
+    protected async registered(name: string): Promise<boolean> {
+        return (await this.env.NWS_KV.get(name)) !== null;
     }
 
-    private stations(): Promise<Response> {
-        const edge: CacheControl = {
-            "s-maxage": Time.Year,
-        };
-
-        const source = new URL(this.request.url);
-        source.searchParams.set("limit", "1");
-        return this.proxy(edge, source);
+    protected async register(name: string): Promise<void> {
+        await this.env.NWS_KV.put(name, this.request.url);
     }
 
-    private forecast(): Promise<Response> {
-        const edge: CacheControl = {
-            "s-maxage": Time.Hour,
-        };
-        return this.proxy(edge);
+    protected getUrl(): URL {
+        return new URL(this.request.url);
     }
 
-    private points(): Promise<Response> {
-        const edge: CacheControl = {
-            "s-maxage": Time.Year,
-        };
-        return this.proxy(edge);
+    protected getName(): string {
+        const url = this.getUrl();
+        url.searchParams.sort();
+        return `${NwsProxy.KV_DO_PREFIX}${url.toString()}`;
     }
 
-    private products(): Promise<Response> {
-        const edge: CacheControl = {
-            "s-maxage": 10 * Time.Minute,
-        };
-        return this.proxy(edge);
-    }
-
-    private observation(): Promise<Response> {
-        const edge: CacheControl = {
-            "s-maxage": 10 * Time.Minute,
-        };
-        return this.proxy(edge);
-    }
-
-    private async proxy(
-        cache?: CacheControl,
-        source: URL = new URL(this.request.url)
-    ): Promise<Response> {
-        const target = new URL(source.pathname + source.search, NWSProxy.NWS_BASE_URL);
-
-        const headers = new Headers(this.request.headers);
-        headers.set("user-agent", this.env.NWS_USER_AGENT);
-
-        const response = await fetch(
-            new Request(target, {
-                method: this.request.method,
-                headers,
-            })
-        );
-
-        if (response.status !== StatusCodes.OK || !cache) return response;
-
-        const existing = CacheControl.parse(response.headers.get("cache-control") ?? "");
-        return this.response(CopyResponse, response, { ...existing, ...cache });
+    protected getTtl(): number {
+        return Time.Hour;
     }
 }

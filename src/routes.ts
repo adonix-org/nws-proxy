@@ -24,21 +24,21 @@ import {
     RouteWorker,
     Time,
 } from "@adonix.org/cloud-spark";
-import { NwsApiProxy } from "./base";
+import { NwsProxy } from "./nws-proxy";
 
-class Points extends NwsApiProxy {
+class Points extends NwsProxy {
     protected override getTtl(): number {
         return Time.Day;
     }
 }
 
-class Alerts extends NwsApiProxy {
+class Alerts extends NwsProxy {
     protected override getTtl(): number {
         return 10 * Time.Minute;
     }
 }
 
-class Stations extends NwsApiProxy {
+class Stations extends NwsProxy {
     protected override getUrl(): URL {
         const url = new URL(this.request.url);
         url.searchParams.set("limit", "1");
@@ -50,33 +50,40 @@ class Stations extends NwsApiProxy {
     }
 }
 
-class Forecast extends NwsApiProxy {
+class Forecast extends NwsProxy {
     protected override getTtl(): number {
         return Time.Hour;
     }
 }
 
-class Products extends NwsApiProxy {
+class HWO extends NwsProxy {
     protected override getTtl(): number {
         return 10 * Time.Minute;
     }
 }
 
-class Observation extends NwsApiProxy {
+class Observation extends NwsProxy {
     protected override getTtl(): number {
         return 10 * Time.Minute;
+    }
+}
+
+class Products extends NwsProxy {
+    protected override async get(): Promise<Response> {
+        return await fetch(this.request);
     }
 }
 
 class DurableObjectListing extends BasicWorker {
     protected override async get(): Promise<Response> {
-        const list = await this.env.NWS_KV.list({ prefix: NwsApiProxy.KV_DO_PREFIX });
+        const list = await this.env.NWS_KV.list({ prefix: NwsProxy.KV_DO_PREFIX });
         const json = list.keys.map((k) => k.name);
         return this.response(JsonResponse, json);
     }
 }
 
 const NWS_ROUTES: RouteTable = [
+    [GET, "/products/types/HWO/locations/:wfo/latest", HWO],
     [GET, "/points/:coordinates", Points],
     [GET, "/alerts/active", Alerts],
     [GET, "/gridpoints/:wfo/:xy/stations", Stations],
@@ -87,11 +94,11 @@ const NWS_ROUTES: RouteTable = [
 
 export class NWSRouteWorker extends RouteWorker {
     protected override init(): void {
-        this.route(GET, "/", DurableObjectListing);
+        this.route(GET, "/do", DurableObjectListing);
 
         this.routes(NWS_ROUTES);
 
         this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
-        // this.use(cache());
+        this.use(cache());
     }
 }
