@@ -14,16 +14,7 @@
  * limitations under the License.
  */
 
-import {
-    BasicWorker,
-    Forbidden,
-    GET,
-    RouteTable,
-    RouteWorker,
-    sortSearchParams,
-} from "@adonix.org/cloud-spark";
-
-export { ProxyStorage } from "./proxy-storage";
+import { BasicWorker, CacheControl, CopyResponse, StatusCodes } from "@adonix.org/cloud-spark";
 
 export abstract class NwsApiProxy extends BasicWorker {
     public static readonly NWS_BASE_URL = "https://api.weather.gov";
@@ -41,37 +32,30 @@ export abstract class NwsApiProxy extends BasicWorker {
         super(new Request(target, { headers, method: request.method }), env, ctx);
     }
 
-    protected abstract getRefreshSeconds(): number;
-
-    protected override get(): Promise<Response> {
+    protected override async get(): Promise<Response> {
         const name = this.getName();
-        console.log(name);
-        if (!name) return this.response(Forbidden);
-
+        console.info(name);
         const stub = this.env.NWS_STORAGE.getByName(name);
-        return stub.proxy(this.request, this.getRefreshSeconds());
+        const response = await stub.proxy(this.request, this.getTtl());
+
+        if (response.status !== StatusCodes.OK) return response;
+
+        const existing = CacheControl.parse(response.headers.get("cache-control") ?? "");
+        return this.response(CopyResponse, response, {
+            ...existing,
+            ...{ "s-maxage": this.getTtl() },
+        });
     }
 
-    private getName(): string | undefined {
-        return `nws:do:${sortSearchParams(this.request).toString()}`;
+    protected getUrl(): URL {
+        return new URL(this.request.url);
     }
+
+    protected getName(): string {
+        const url = this.getUrl();
+        url.searchParams.sort();
+        return `nws:do:${url.toString()}`;
+    }
+
+    protected abstract getTtl(): number;
 }
-
-class Points extends NwsApiProxy {
-    protected getRefreshSeconds(): number {
-        return 30;
-    }
-}
-
-const ROUTE_TABLE: RouteTable = [
-    [GET, "/points/:coordinates", Points],
-    [GET, "/alerts/active", Points],
-];
-
-class NwsWorker extends RouteWorker {
-    public override init(): void {
-        this.routes(ROUTE_TABLE);
-    }
-}
-
-export default NwsWorker.ignite();

@@ -13,28 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 {
-    "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "nws-proxy",
-    "main": "src/base.ts",
-    "compatibility_date": "2025-11-18",
-    "observability": {
-        "enabled": true
-    },
-    "preview_urls": false,
-    "durable_objects": {
-        "bindings": [
-            {
-                "name": "NWS_STORAGE",
-                "class_name": "ProxyStorage"
-            }
-        ]
-    },
-    "migrations": [
-        {
-            "tag": "v1",
-            "new_sqlite_classes": ["ProxyStorage"]
-        }
-    ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "nws-proxy",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-11-18",
+	"observability": {
+		"enabled": true
+	},
+	"preview_urls": false,
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "NWS_STORAGE",
+				"class_name": "ProxyStorage"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"ProxyStorage"
+			]
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "NWS_KV",
+			"id": "247cbcc4805348e9afafc84d11209a73"
+		}
+	]
 }

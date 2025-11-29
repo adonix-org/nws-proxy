@@ -14,51 +14,8 @@
  * limitations under the License.
  */
 
-import { GET, JsonResponse, RouteWorker, SuccessResponse } from "@adonix.org/cloud-spark";
+import { NWSRouteWorker } from "./routes";
 
 export { ProxyStorage } from "./proxy-storage";
 
-class TestWorker extends RouteWorker {
-    protected name: string = "http://localhost:8787/";
-
-    public override init(): void {
-        this.route(GET, "/reset", this.reset);
-        this.route(GET, "/stop", this.stop);
-        this.route(GET, "/proxy", this.proxy);
-        this.route(GET, "/refresh", this.refresh);
-        this.route(GET, "/", this.root);
-    }
-
-    public async stop() {
-        const stub = this.env.NWS_STORAGE.getByName(this.name);
-        return await stub.stop();
-    }
-
-    public async reset() {
-        const stub = this.env.NWS_STORAGE.getByName(this.name);
-        return await stub.reset();
-    }
-
-    public proxy() {
-        return this.response(JsonResponse, { message: "Hello Proxy!" });
-    }
-
-    public async refresh() {
-        const stub = this.env.NWS_STORAGE.getByName(this.name);
-        return await stub.refresh();
-    }
-
-    public async root(): Promise<Response> {
-        this.name = this.request.url;
-        const stub = this.env.NWS_STORAGE.getByName(this.name);
-        const request = new Request(new URL("/proxy", this.request.url), {
-            headers: this.request.headers,
-        });
-        return await stub.proxy(request, 10);
-    }
-}
-
-export default TestWorker.ignite();
-
-//import { NWSProxy } from "./nws-proxy";
-//export default NWSProxy.ignite();
+export default NWSRouteWorker.ignite();
