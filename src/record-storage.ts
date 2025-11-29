@@ -16,7 +16,7 @@
 
 import { DurableObject } from "cloudflare:workers";
 
-export abstract class ObjectStorage<T> extends DurableObject {
+export abstract class RecordStorage<T> extends DurableObject {
     private record?: T;
 
     protected abstract getKey(): string;
