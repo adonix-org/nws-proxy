@@ -60,10 +60,4 @@ export function deserializeRequest(json: SerializedRequest): Request {
     });
 }
 
-export class StoredResponse extends CopyResponse {
-    constructor(json: StorageRecord, cache?: CacheControl) {
-        super(deserializeResponse(json.response), cache);
-        this.setHeader("x-proxy-storage", "HIT");
-        this.setHeader("x-last-refreshed", json.lastRefresh.toUTCString());
-    }
-}
+

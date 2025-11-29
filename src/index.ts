@@ -22,9 +22,21 @@ class TestWorker extends RouteWorker {
     protected name: string = "http://localhost:8787/";
 
     public override init(): void {
+        this.route(GET, "/reset", this.reset);
+        this.route(GET, "/stop", this.stop);
         this.route(GET, "/proxy", this.proxy);
         this.route(GET, "/refresh", this.refresh);
         this.route(GET, "/", this.root);
+    }
+
+    public async stop() {
+        const stub = this.env.NWS_STORAGE.getByName(this.name);
+        return await stub.stop();
+    }
+
+    public async reset() {
+        const stub = this.env.NWS_STORAGE.getByName(this.name);
+        return await stub.reset();
     }
 
     public proxy() {
@@ -42,7 +54,7 @@ class TestWorker extends RouteWorker {
         const request = new Request(new URL("/proxy", this.request.url), {
             headers: this.request.headers,
         });
-        return await stub.proxy(request, 1000, true);
+        return await stub.proxy(request, 10);
     }
 }
 

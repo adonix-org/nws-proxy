@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import {
-    deserializeRequest,
-    serializeRequest,
-    serializeResponse,
-    StoredResponse,
-} from "./serialized";
+import { deserializeRequest, serializeRequest, serializeResponse } from "./serialized";
 import { ObjectStorage } from "./object-storage";
 import { StorageRecord } from "./interfaces";
+import { ProxyReset, ProxyStopped, StoredResponse } from "./responses";
+import { Time } from "@adonix.org/cloud-spark";
 
 export class ProxyStorage extends ObjectStorage<StorageRecord> {
     private static readonly KEY = "nws:storage";
+    private static readonly MIN_ALARM_SECONDS = 10 * Time.Second;
 
     protected getKey(): string {
         return ProxyStorage.KEY;
@@ -44,7 +42,7 @@ export class ProxyStorage extends ObjectStorage<StorageRecord> {
         return await this.origin(request, refreshSeconds);
     }
 
-    public async origin(request: Request, refreshSeconds: number): Promise<Response> {
+    protected async origin(request: Request, refreshSeconds: number): Promise<Response> {
         const response = await fetch(request);
 
         if (response.ok) {
@@ -58,9 +56,32 @@ export class ProxyStorage extends ObjectStorage<StorageRecord> {
             await this.save(stored);
         }
 
-        // TODO: set alarm based on refresh seconds
+        this.setAlarm(refreshSeconds);
 
         return response;
+    }
+
+    protected async setAlarm(seconds: number): Promise<void> {
+        await this.ctx.storage.deleteAlarm();
+        if (seconds < ProxyStorage.MIN_ALARM_SECONDS) {
+            console.warn(
+                `Alarm seconds (${seconds}) less than minimum (${ProxyStorage.MIN_ALARM_SECONDS}). Using minimum.`
+            );
+        }
+        await this.ctx.storage.setAlarm(
+            Date.now() + Math.max(seconds, ProxyStorage.MIN_ALARM_SECONDS) * 1000
+        );
+    }
+
+    public async stop(): Promise<Response> {
+        await this.ctx.storage.deleteAlarm();
+        return new ProxyStopped().response();
+    }
+
+    public async reset(): Promise<Response> {
+        await this.ctx.storage.deleteAlarm();
+        await this.ctx.storage.deleteAll();
+        return new ProxyReset().response();
     }
 
     public async refresh(): Promise<Response> {
@@ -71,11 +92,16 @@ export class ProxyStorage extends ObjectStorage<StorageRecord> {
         return this.origin(request, stored.refreshSeconds);
     }
 
-    public override async alarm(): Promise<void> {
+    protected async doAlarm(): Promise<void> {
         try {
             await this.refresh();
-        } catch (err) {
-            console.error(err);
+        } catch (error) {
+            console.error(error);
         }
+    }
+
+    public override async alarm(): Promise<void> {
+        console.log("Alarm fired!");
+        this.ctx.waitUntil(this.doAlarm());
     }
 }

@@ -17,19 +17,19 @@
 import { DurableObject } from "cloudflare:workers";
 
 export abstract class ObjectStorage<T> extends DurableObject {
-    private stored?: T;
+    private record?: T;
 
     protected abstract getKey(): string;
 
     protected async load(options?: DurableObjectGetOptions): Promise<T | undefined> {
-        if (!this.stored) {
-            this.stored = await this.ctx.storage.get<T>(this.getKey(), options);
+        if (!this.record) {
+            this.record = await this.ctx.storage.get<T>(this.getKey(), options);
         }
-        return this.stored;
+        return this.record;
     }
 
     protected async save(value: T, options?: DurableObjectPutOptions): Promise<void> {
-        this.stored = value;
+        this.record = value;
         await this.ctx.storage.put<T>(this.getKey(), value, options);
     }
 }
