@@ -3,6 +3,7 @@
     "version": "0.0.2",
     "description": "A Cloudflare Worker Proxy to the NWS API",
     "license": "Apache-2.0",
+    "type": "module",
     "author": {
         "name": "Ty Busby",
         "email": "tybusby@adonix.org",

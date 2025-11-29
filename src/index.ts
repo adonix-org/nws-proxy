@@ -14,6 +14,39 @@
  * limitations under the License.
  */
 
-import { NWSProxy } from "./nws-proxy";
+import { GET, JsonResponse, RouteWorker, SuccessResponse } from "@adonix.org/cloud-spark";
 
-export default NWSProxy.ignite();
+export { ProxyStorage as StorageProxy } from "./proxy-storage";
+
+class TestWorker extends RouteWorker {
+    protected name: string = "http://localhost:8787/";
+
+    public override init(): void {
+        this.route(GET, "/proxy", this.proxy);
+        this.route(GET, "/refresh", this.refresh);
+        this.route(GET, "/", this.root);
+    }
+
+    public proxy() {
+        return this.response(JsonResponse, { message: "Hello Proxy!" });
+    }
+
+    public async refresh() {
+        const stub = this.env.NWS_STORAGE.getByName(this.name);
+        return await stub.refresh();
+    }
+
+    public async root(): Promise<Response> {
+        this.name = this.request.url;
+        const stub = this.env.NWS_STORAGE.getByName(this.name);
+        const request = new Request(new URL("/proxy", this.request.url), {
+            headers: this.request.headers,
+        });
+        return await stub.proxy(request, 1000, true);
+    }
+}
+
+export default TestWorker.ignite();
+
+//import { NWSProxy } from "./nws-proxy";
+//export default NWSProxy.ignite();

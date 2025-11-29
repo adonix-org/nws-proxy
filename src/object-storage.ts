@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-{
-    "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "nws-proxy",
-    "main": "src/index.ts",
-    "compatibility_date": "2025-11-18",
-    "observability": {
-        "enabled": true
-    },
-    "preview_urls": false,
-    "durable_objects": {
-        "bindings": [
-            {
-                "name": "NWS_STORAGE",
-                "class_name": "StorageProxy"
-            }
-        ]
-    },
-    "migrations": [
-        {
-            "tag": "v1",
-            "new_sqlite_classes": ["StorageProxy"]
+import { DurableObject } from "cloudflare:workers";
+
+export abstract class ObjectStorage<T> extends DurableObject {
+    private stored?: T;
+
+    protected abstract getKey(): string;
+
+    protected async load(options?: DurableObjectGetOptions): Promise<T | undefined> {
+        if (!this.stored) {
+            this.stored = await this.ctx.storage.get<T>(this.getKey(), options);
         }
-    ]
+        return this.stored;
+    }
+
+    protected async save(value: T, options?: DurableObjectPutOptions): Promise<void> {
+        this.stored = value;
+        await this.ctx.storage.put<T>(this.getKey(), value, options);
+    }
 }

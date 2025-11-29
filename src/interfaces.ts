@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-{
-    "$schema": "node_modules/wrangler/config-schema.json",
-    "name": "nws-proxy",
-    "main": "src/index.ts",
-    "compatibility_date": "2025-11-18",
-    "observability": {
-        "enabled": true
-    },
-    "preview_urls": false,
-    "durable_objects": {
-        "bindings": [
-            {
-                "name": "NWS_STORAGE",
-                "class_name": "StorageProxy"
-            }
-        ]
-    },
-    "migrations": [
-        {
-            "tag": "v1",
-            "new_sqlite_classes": ["StorageProxy"]
-        }
-    ]
+export interface SerializedResponse {
+    status: number;
+    statusText: string;
+    headers: Record<string, string>;
+    body: string;
+}
+
+export interface SerializedRequest {
+    method: string;
+    url: string;
+    headers: Record<string, string>;
+    body: string;
+}
+
+export interface StorageRecord {
+    request: SerializedRequest;
+    response: SerializedResponse;
+    lastRefresh: Date;
+    refreshSeconds: number;
 }
