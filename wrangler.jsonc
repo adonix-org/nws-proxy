@@ -17,7 +17,7 @@
 {
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "nws-proxy",
-    "main": "src/index.ts",
+    "main": "src/base.ts",
     "compatibility_date": "2025-11-18",
     "observability": {
         "enabled": true
@@ -27,14 +27,14 @@
         "bindings": [
             {
                 "name": "NWS_STORAGE",
-                "class_name": "StorageProxy"
+                "class_name": "ProxyStorage"
             }
         ]
     },
     "migrations": [
         {
             "tag": "v1",
-            "new_sqlite_classes": ["StorageProxy"]
+            "new_sqlite_classes": ["ProxyStorage"]
         }
     ]
 }

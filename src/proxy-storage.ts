@@ -18,7 +18,7 @@ import { deserializeRequest, serializeRequest, serializeResponse } from "./seria
 import { RecordStorage } from "./record-storage";
 import { StorageRecord } from "./interfaces";
 import { ProxyReset, ProxyStopped, StoredResponse } from "./responses";
-import { Time } from "@adonix.org/cloud-spark";
+import { StatusCodes, Time } from "@adonix.org/cloud-spark";
 
 export class ProxyStorage extends RecordStorage<StorageRecord> {
     private static readonly KEY = "nws:storage";
@@ -45,19 +45,20 @@ export class ProxyStorage extends RecordStorage<StorageRecord> {
     protected async origin(request: Request, refreshSeconds: number): Promise<Response> {
         const response = await fetch(request);
 
-        if (response.ok) {
-            const stored: StorageRecord = {
-                request: await serializeRequest(request),
-                response: await serializeResponse(response.clone()),
-                lastRefresh: new Date(),
-                refreshSeconds,
-            };
-
-            await this.save(stored);
+        if (response.status !== StatusCodes.OK) {
+            await this.reset();
+            return response;
         }
 
-        this.setAlarm(refreshSeconds);
+        const stored: StorageRecord = {
+            request: await serializeRequest(request),
+            response: await serializeResponse(response.clone()),
+            lastRefresh: new Date(),
+            refreshSeconds,
+        };
 
+        await this.save(stored);
+        await this.setAlarm(refreshSeconds);
         return response;
     }
 

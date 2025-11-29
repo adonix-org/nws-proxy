@@ -16,7 +16,7 @@
 
 import { GET, JsonResponse, RouteWorker, SuccessResponse } from "@adonix.org/cloud-spark";
 
-export { ProxyStorage as StorageProxy } from "./proxy-storage";
+export { ProxyStorage } from "./proxy-storage";
 
 class TestWorker extends RouteWorker {
     protected name: string = "http://localhost:8787/";
