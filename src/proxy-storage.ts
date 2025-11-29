@@ -21,7 +21,7 @@ import { ProxyReset, ProxyStopped, StoredResponse } from "./responses";
 import { StatusCodes, Time } from "@adonix.org/cloud-spark";
 
 export class ProxyStorage extends RecordStorage<StorageRecord> {
-    private static readonly KEY = "nws:storage";
+    private static readonly KEY = "nws:proxy";
     private static readonly MIN_ALARM_SECONDS = 10 * Time.Second;
 
     protected getKey(): string {
