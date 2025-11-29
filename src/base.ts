@@ -18,6 +18,7 @@ import { BasicWorker, CacheControl, CopyResponse, StatusCodes } from "@adonix.or
 
 export abstract class NwsApiProxy extends BasicWorker {
     public static readonly NWS_BASE_URL = "https://api.weather.gov";
+    public static readonly KV_DO_PREFIX = "nws:do:";
 
     constructor(request: Request, env: Env, ctx: ExecutionContext) {
         const headers = new Headers(request.headers);
@@ -35,16 +36,31 @@ export abstract class NwsApiProxy extends BasicWorker {
     protected override async get(): Promise<Response> {
         const name = this.getName();
         console.info(name);
+
+        const exists = await this.registered(name);
+
         const stub = this.env.NWS_STORAGE.getByName(name);
         const response = await stub.proxy(this.request, this.getTtl());
 
         if (response.status !== StatusCodes.OK) return response;
 
-        const existing = CacheControl.parse(response.headers.get("cache-control") ?? "");
+        if (!exists) {
+            await this.register(name);
+        }
+
+        const cache = CacheControl.parse(response.headers.get("cache-control") ?? "");
         return this.response(CopyResponse, response, {
-            ...existing,
+            ...cache,
             ...{ "s-maxage": this.getTtl() },
         });
+    }
+
+    protected async registered(name: string): Promise<boolean> {
+        return (await this.env.NWS_KV.get(name)) !== null;
+    }
+
+    protected async register(name: string): Promise<void> {
+        await this.env.NWS_KV.put(name, this.request.url);
     }
 
     protected getUrl(): URL {
@@ -54,7 +70,7 @@ export abstract class NwsApiProxy extends BasicWorker {
     protected getName(): string {
         const url = this.getUrl();
         url.searchParams.sort();
-        return `nws:do:${url.toString()}`;
+        return `${NwsApiProxy.KV_DO_PREFIX}${url.toString()}`;
     }
 
     protected abstract getTtl(): number;

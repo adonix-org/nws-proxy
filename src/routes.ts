@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import { cache, cors, GET, RouteTable, RouteWorker, Time } from "@adonix.org/cloud-spark";
+import {
+    BasicWorker,
+    cache,
+    cors,
+    GET,
+    JsonResponse,
+    RouteTable,
+    RouteWorker,
+    Time,
+} from "@adonix.org/cloud-spark";
 import { NwsApiProxy } from "./base";
 
 class Points extends NwsApiProxy {
@@ -59,6 +68,14 @@ class Observation extends NwsApiProxy {
     }
 }
 
+class DurableObjectListing extends BasicWorker {
+    protected override async get(): Promise<Response> {
+        const list = await this.env.NWS_KV.list({ prefix: NwsApiProxy.KV_DO_PREFIX });
+        const json = list.keys.map((k) => k.name);
+        return this.response(JsonResponse, json);
+    }
+}
+
 const NWS_ROUTES: RouteTable = [
     [GET, "/points/:coordinates", Points],
     [GET, "/alerts/active", Alerts],
@@ -70,6 +87,8 @@ const NWS_ROUTES: RouteTable = [
 
 export class NWSRouteWorker extends RouteWorker {
     protected override init(): void {
+        this.route(GET, "/", DurableObjectListing);
+
         this.routes(NWS_ROUTES);
 
         this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
