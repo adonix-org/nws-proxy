@@ -36,6 +36,11 @@ export class ProxyStorage extends RecordStorage<StorageRecord> {
         const stored = useStored ? await this.load() : undefined;
 
         if (stored) {
+            if (stored.refreshSeconds !== refreshSeconds) {
+                stored.refreshSeconds = refreshSeconds;
+                await this.save(stored);
+            }
+
             return new StoredResponse(stored).response();
         }
 
@@ -102,7 +107,6 @@ export class ProxyStorage extends RecordStorage<StorageRecord> {
     }
 
     public override async alarm(): Promise<void> {
-        console.log("Alarm fired!");
         this.ctx.waitUntil(this.doAlarm());
     }
 }
