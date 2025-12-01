@@ -41,8 +41,6 @@ export abstract class NwsProxy extends BasicWorker {
 
     protected override async get(): Promise<Response> {
         const name = this.getName();
-        console.info(name);
-
         const exists = await this.registered(name);
 
         const stub = this.env.NWS_STORAGE.getByName(name);

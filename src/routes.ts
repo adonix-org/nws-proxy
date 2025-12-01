@@ -17,6 +17,7 @@
 import {
     BasicWorker,
     cache,
+    CopyResponse,
     cors,
     GET,
     JsonResponse,
@@ -70,7 +71,11 @@ class Observation extends NwsProxy {
 
 class Products extends NwsProxy {
     protected override async get(): Promise<Response> {
-        return await fetch(this.request);
+        const response = await fetch(this.request);
+        return this.response(CopyResponse, response, {
+            "max-age": 10 * Time.Minute,
+            "s-maxage": 1 * Time.Hour,
+        });
     }
 }
 
