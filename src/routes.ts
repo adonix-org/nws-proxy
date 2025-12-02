@@ -23,6 +23,7 @@ import {
     JsonResponse,
     RouteTable,
     RouteWorker,
+    TextResponse,
     Time,
 } from "@adonix.org/cloud-spark";
 import { NwsProxy } from "./nws-proxy";
@@ -79,9 +80,26 @@ class Products extends NwsProxy {
     }
 }
 
-class DurableObjectListing extends BasicWorker {
+class DurableObjectList extends BasicWorker {
     protected override async get(): Promise<Response> {
         const list = await this.env.NWS_KV.list({ prefix: NwsProxy.KV_DO_PREFIX });
+        const json = list.keys.map((k) => k.name);
+        return this.response(JsonResponse, json);
+    }
+}
+
+class DurableObjectReset extends BasicWorker {
+    protected override async get(): Promise<Response> {
+        const list = await this.env.NWS_KV.list({ prefix: NwsProxy.KV_DO_PREFIX });
+        for (const key of list.keys) {
+            const stub = this.env.NWS_STORAGE.getByName(key.name);
+            const response = await stub.reset();
+            if (response.ok) {
+                await this.env.NWS_KV.delete(key.name);
+            }
+            console.info(key.name, await response.text());
+        }
+
         const json = list.keys.map((k) => k.name);
         return this.response(JsonResponse, json);
     }
@@ -99,7 +117,8 @@ const NWS_ROUTES: RouteTable = [
 
 export class NWSRouteWorker extends RouteWorker {
     protected override init(): void {
-        this.route(GET, "/do", DurableObjectListing);
+        this.route(GET, "/list", DurableObjectList);
+        this.route(GET, "/reset", DurableObjectReset);
 
         this.routes(NWS_ROUTES);
 
