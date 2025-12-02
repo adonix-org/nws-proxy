@@ -16,14 +16,12 @@
 
 import {
     BasicWorker,
-    cache,
     CopyResponse,
     cors,
     GET,
     JsonResponse,
     RouteTable,
     RouteWorker,
-    TextResponse,
     Time,
 } from "@adonix.org/cloud-spark";
 import { NwsProxy } from "./nws-proxy";
