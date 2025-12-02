@@ -94,9 +94,6 @@ class DurableObjectReset extends BasicWorker {
         for (const key of list.keys) {
             const stub = this.env.NWS_STORAGE.getByName(key.name);
             const response = await stub.reset();
-            if (response.ok) {
-                await this.env.NWS_KV.delete(key.name);
-            }
             console.info(key.name, await response.text());
         }
 
