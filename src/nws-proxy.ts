@@ -16,6 +16,7 @@
 
 import {
     BasicWorker,
+    cache,
     CacheControl,
     CopyResponse,
     StatusCodes,
@@ -37,6 +38,10 @@ export abstract class NwsProxy extends BasicWorker {
         const source = new URL(request.url);
         const target = new URL(source.pathname + source.search, NwsProxy.NWS_BASE_URL);
         super(new Request(target, { headers, method: request.method }), env, ctx);
+    }
+
+    protected override init(): void {
+        this.use(cache());
     }
 
     protected override async get(): Promise<Response> {

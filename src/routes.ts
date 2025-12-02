@@ -104,6 +104,5 @@ export class NWSRouteWorker extends RouteWorker {
         this.routes(NWS_ROUTES);
 
         this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
-        this.use(cache());
     }
 }
