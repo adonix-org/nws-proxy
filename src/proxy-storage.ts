@@ -22,7 +22,7 @@ import { StatusCodes, Time } from "@adonix.org/cloud-spark";
 
 export class ProxyStorage extends RecordStorage<StorageRecord> {
     private static readonly KEY = "nws:proxy";
-    private static readonly MIN_ALARM_SECONDS = 10 * Time.Second;
+    private static readonly MIN_ALARM_SECONDS = 1 * Time.Minute;
 
     protected getKey(): string {
         return ProxyStorage.KEY;
