@@ -113,7 +113,7 @@ const NWS_ROUTES: RouteTable = [
 export class NWSRouteWorker extends RouteWorker {
     protected override init(): void {
         this.route(GET, "/list", DurableObjectList);
-        this.route(GET, "/reset", DurableObjectReset);
+        // this.route(GET, "/reset", DurableObjectReset);
 
         this.routes(NWS_ROUTES);
 
