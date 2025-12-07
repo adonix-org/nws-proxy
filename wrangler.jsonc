@@ -40,7 +40,8 @@
     "kv_namespaces": [
         {
             "binding": "NWS_KV",
-            "id": "247cbcc4805348e9afafc84d11209a73"
+            "id": "247cbcc4805348e9afafc84d11209a73",
+            "preview_id": "a6ea40193a86464fa44ab50736679cf8"
         }
     ]
 }

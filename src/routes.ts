@@ -28,7 +28,7 @@ import { NwsProxy } from "./nws-proxy";
 
 class Points extends NwsProxy {
     protected override getTtl(): number {
-        return Time.Day;
+        return Time.Month;
     }
 }
 
@@ -46,7 +46,7 @@ class Stations extends NwsProxy {
     }
 
     protected override getTtl(): number {
-        return Time.Day;
+        return Time.Month;
     }
 }
 

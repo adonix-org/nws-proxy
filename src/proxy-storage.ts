@@ -15,36 +15,56 @@
  */
 
 import { deserializeRequest, serializeRequest, serializeResponse } from "./serialized";
-import { RecordStorage } from "./record-storage";
 import { StorageRecord } from "./interfaces";
 import { ProxyReset, ProxyStopped, StoredResponse } from "./responses";
 import { StatusCodes, Time } from "@adonix.org/cloud-spark";
+import { DurableObject } from "cloudflare:workers";
 
-export class ProxyStorage extends RecordStorage<StorageRecord> {
+export class ProxyStorage extends DurableObject {
     private static readonly KEY = "nws:proxy";
     private static readonly MIN_ALARM_SECONDS = 1 * Time.Minute;
+    private static readonly ALLOWED_LATE_SECONDS = 5 * Time.Minute;
+    private stored: StorageRecord | undefined;
+
+    constructor(ctx: DurableObjectState, env: Env) {
+        super(ctx, env);
+
+        this.ctx.blockConcurrencyWhile(async () => {
+            this.stored = await this.ctx.storage.get<StorageRecord>(this.getKey());
+        });
+    }
 
     protected getKey(): string {
         return ProxyStorage.KEY;
     }
 
-    public async proxy(
-        request: Request,
-        refreshSeconds: number,
-        useStored = true
-    ): Promise<Response> {
-        const stored = useStored ? await this.load() : undefined;
+    protected async save(): Promise<void> {
+        if (this.stored) this.ctx.storage.put(this.getKey(), this.stored);
+    }
 
-        if (stored) {
-            if (stored.refreshSeconds !== refreshSeconds) {
-                stored.refreshSeconds = refreshSeconds;
-                await this.save(stored);
-            }
+    private hasExpired(): boolean {
+        if (!this.stored) return true;
 
-            return new StoredResponse(stored).response();
+        const now = Date.now();
+        const allowed = (this.stored.refreshSeconds + ProxyStorage.ALLOWED_LATE_SECONDS) * 1000;
+        const expires = this.stored.lastRefresh.getTime() + allowed;
+        return now > expires;
+    }
+
+    public async proxy(request: Request, refreshSeconds: number): Promise<Response> {
+        // No stored record exists or it has expired
+        if (!this.stored || this.hasExpired()) {
+            return this.origin(request, refreshSeconds);
         }
 
-        return await this.origin(request, refreshSeconds);
+        // Upddate refreshSeconds if it changed.
+        if (this.stored.refreshSeconds !== refreshSeconds) {
+            this.stored.refreshSeconds = refreshSeconds;
+            await this.save();
+            await this.setAlarm(refreshSeconds);
+        }
+
+        return new StoredResponse(this.stored).response();
     }
 
     protected async origin(request: Request, refreshSeconds: number): Promise<Response> {
@@ -55,14 +75,14 @@ export class ProxyStorage extends RecordStorage<StorageRecord> {
             return response;
         }
 
-        const stored: StorageRecord = {
+        this.stored = {
             request: await serializeRequest(request),
             response: await serializeResponse(response.clone()),
             lastRefresh: new Date(),
             refreshSeconds,
         };
 
-        await this.save(stored);
+        await this.save();
         await this.setAlarm(refreshSeconds);
         return response;
     }
@@ -91,11 +111,10 @@ export class ProxyStorage extends RecordStorage<StorageRecord> {
     }
 
     public async refresh(): Promise<Response> {
-        const stored = await this.load();
-        if (!stored) throw new Error("Missing storage entry.");
+        if (!this.stored) throw new Error("Missing storage entry.");
 
-        const request = deserializeRequest(stored.request);
-        return this.origin(request, stored.refreshSeconds);
+        const request = deserializeRequest(this.stored.request);
+        return this.origin(request, this.stored.refreshSeconds);
     }
 
     protected async doAlarm(): Promise<void> {
