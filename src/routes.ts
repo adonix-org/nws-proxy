@@ -23,6 +23,7 @@ import {
     RouteWorker,
     Time,
 } from "@adonix.org/cloud-spark";
+import { cors } from "@adonix.org/cloud-spark/cors";
 import { NwsProxy } from "./nws-proxy";
 
 class Points extends NwsProxy {
@@ -115,5 +116,7 @@ export class NWSRouteWorker extends RouteWorker {
         this.route(GET, "/admin/reset", DurableObjectReset);
 
         this.routes(NWS_ROUTES);
+
+        this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
     }
 }
