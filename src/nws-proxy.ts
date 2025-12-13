@@ -16,13 +16,13 @@
 
 import {
     BasicWorker,
-    cache,
     CacheControl,
     CopyResponse,
     Forbidden,
     StatusCodes,
     Time,
 } from "@adonix.org/cloud-spark";
+import { cache } from "@adonix.org/cloud-spark/cache";
 
 export abstract class NwsProxy extends BasicWorker {
     public static readonly NWS_BASE_URL = "https://api.weather.gov";

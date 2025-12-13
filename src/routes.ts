@@ -17,7 +17,6 @@
 import {
     BasicWorker,
     CopyResponse,
-    cors,
     GET,
     JsonResponse,
     RouteTable,
@@ -116,7 +115,5 @@ export class NWSRouteWorker extends RouteWorker {
         this.route(GET, "/admin/reset", DurableObjectReset);
 
         this.routes(NWS_ROUTES);
-
-        this.use(cors({ allowedHeaders: ["feature-flags"], maxAge: Time.Month }));
     }
 }
