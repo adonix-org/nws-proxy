@@ -22,6 +22,7 @@
     "observability": {
         "enabled": true
     },
+    "placement": { "mode": "smart" },
     "preview_urls": false,
     "durable_objects": {
         "bindings": [
