@@ -58,7 +58,7 @@ class Forecast extends NwsProxy {
 
 class HWO extends NwsProxy {
     protected override getTtl(): number {
-        return 10 * Time.Minute;
+        return 30 * Time.Minute;
     }
 }
 
