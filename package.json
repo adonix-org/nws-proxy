@@ -26,6 +26,7 @@
     "scripts": {
         "deploy": "tsc && wrangler deploy",
         "dev": "wrangler dev",
+        "build": "wrangler build",
         "start": "wrangler dev",
         "test": "vitest",
         "types": "wrangler types ./types/wrangler.d.ts"
