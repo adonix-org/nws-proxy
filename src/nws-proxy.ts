@@ -33,6 +33,7 @@ export abstract class NwsProxy extends BasicWorker {
         headers.delete("cache-control");
         headers.delete("pragma");
         headers.delete("accept-language");
+        headers.delete("origin");
 
         headers.set("user-agent", env.NWS_USER_AGENT);
 
@@ -48,7 +49,7 @@ export abstract class NwsProxy extends BasicWorker {
     protected override async get(): Promise<Response> {
         const name = this.getName();
         const exists = await this.registered(name);
-        if (!exists) return this.response(Forbidden, "NWS proxy registration is closed.");
+        //if (!exists) return this.response(Forbidden, "NWS proxy registration is closed.");
 
         const stub = this.env.NWS_STORAGE.getByName(name);
         const response = await stub.proxy(this.request, this.getTtl());
