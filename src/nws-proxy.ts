@@ -33,7 +33,6 @@ export abstract class NwsProxy extends BasicWorker {
         headers.delete("cache-control");
         headers.delete("pragma");
         headers.delete("accept-language");
-        headers.delete("origin");
 
         headers.set("user-agent", env.NWS_USER_AGENT);
 
