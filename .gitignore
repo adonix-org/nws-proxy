@@ -11,7 +11,7 @@
 # Build outputs
 coverage/
 dist/
-types/cloudflare.d.ts
+types/
 
 # Dependencies
 node_modules/
