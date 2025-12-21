@@ -22,10 +22,10 @@ import { deserializeResponse } from "./serialized";
 export class StoredResponse extends CopyResponse {
     constructor(json: StorageRecord, cache?: CacheControl) {
         super(deserializeResponse(json.response), cache);
-        this.setHeader("x-proxy-storage", "HIT");
-        this.setHeader("x-proxy-updated", json.lastRefresh.toUTCString());
+        this.setHeader("NWS-Proxy-Storage", "HIT");
+        this.setHeader("NWS-Proxy-Updated", json.lastRefresh.toUTCString());
         this.setHeader(
-            "x-proxy-age",
+            "NWS-Proxy-Age",
             `${Math.floor((Date.now() - json.lastRefresh.getTime()) / 1000)}`
         );
     }
