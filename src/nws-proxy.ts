@@ -42,7 +42,7 @@ export abstract class NwsProxy extends BasicWorker {
     }
 
     protected override init(): void {
-        this.use(cache());
+        this.use(cache({ debug: true }));
     }
 
     protected override async get(): Promise<Response> {
