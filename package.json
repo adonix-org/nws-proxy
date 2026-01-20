@@ -33,7 +33,7 @@
     },
     "devDependencies": {
         "typescript": "^5.9.3",
-        "wrangler": "^4.58.0"
+        "wrangler": "^4.59.2"
     },
     "dependencies": {
         "@adonix.org/cloud-spark": "^2.1.2"

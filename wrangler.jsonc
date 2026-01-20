@@ -18,7 +18,7 @@
     "$schema": "node_modules/wrangler/config-schema.json",
     "name": "nws-proxy",
     "main": "src/index.ts",
-    "compatibility_date": "2026-01-10",
+    "compatibility_date": "2026-01-20",
     "routes": [{ "pattern": "nws.adonix.org", "custom_domain": true }],
     "placement": { "mode": "smart" },
     "workers_dev": false,
